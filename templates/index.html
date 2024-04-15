@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Article Editor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+</head>
+<body>
+    <div class="chat-section">
+        <form action="/invoke_agent" method="post" id="chat-form">
+            <textarea name="user_input" placeholder="Type your instructions here..." rows="4"></textarea>
+            <button type="submit">Send</button>
+        </form>
+
+        <div id="loading" style="display: none;">
+            <div class="spinner"></div>
+        </div>
+
+        <div id="response" class="response-container"></div>
+
+    </div>
+
+    <div id="article-wrapper">
+        <textarea name="article" id="article-content">{{ content }}</textarea>
+    </div>
+    <button class="update-button" onclick="submitMDEContent(event)">Update Article</button>
+    
+
+    <script>
+        var easyMDE;
+        document.addEventListener('DOMContentLoaded', function () {
+            easyMDE = new EasyMDE({ element: document.getElementById('article-content') });
+        });
+
+        function submitMDEContent(event) {
+            event.preventDefault(); // Prevent the form from causing a page reload
+            let markdownContent = easyMDE.value();
+
+            fetch("/update_article", {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ article: markdownContent })
+            }).then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+                alert("Article updated successfully!");
+            }).catch((error) => {
+                console.error('Error:', error);
+                alert("An error occurred while updating the article.");
+            });
+        }
+
+        document.getElementById('chat-form').onsubmit = async function(e) {
+            e.preventDefault();
+            let user_input = document.querySelector('textarea[name="user_input"]').value;  // Updated to select textarea
+            let formData = new FormData();
+            formData.append('user_input', user_input);
+            let response = await fetch("/invoke_agent", {
+                method: "POST",
+                body: formData
+            });
+            let result = await response.json();
+            document.getElementById('response').textContent = result.response;
+            easyMDE.value(result.content);
+            document.querySelector('textarea[name="user_input"]').value = '';  // Clear input field after sending
+        };
+    </script>
+    <script src="{{ url_for('static', filename='js/spinner.js') }}"></script>
+</body>
+</html>

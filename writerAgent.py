@@ -39,9 +39,9 @@ def get_all_paragraphs() -> str:
     return current_article.get_all_paragraphs()
 
 @tool
-def add_paragraph(new_paragraph: str) -> str:
-    """Adds a paragraph to the article"""
-    current_article.add_paragraph(new_paragraph)
+def add_paragraph(new_paragraph: str, index:int) -> str:
+    """Adds a paragraph to the article at the specified index. If index is -1, the paragraph is added at the end"""
+    current_article.add_paragraph(new_paragraph, index)
     return "Paragraph added"
 
 @tool
@@ -71,10 +71,10 @@ agent_with_chat_history = RunnableWithMessageHistory(
 )
 
 # Example usage
-input = """I want to include that Suno AI was developed by Anthropic, a group of ex-OpenAI researchers and the same ones who developed Claude 3, a powerful model that copete directly with GPT-4 that i will talk about later in this article. Put that where i write about Suno AI.
-"""
-agent_with_chat_history.invoke(
-    {"input": input},
-    config={"configurable": {"session_id": "<foo>"}},
-)
+# input = """I want to include that Suno AI was developed by Anthropic, a group of ex-OpenAI researchers and the same ones who developed Claude 3, a powerful model that copete directly with GPT-4 that i will talk about later in this article. Put that where i write about Suno AI.
+# """
+# agent_with_chat_history.invoke(
+#     {"input": input},
+#     config={"configurable": {"session_id": "<foo>"}},
+# )
 
