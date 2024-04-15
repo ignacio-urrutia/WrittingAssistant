@@ -70,7 +70,7 @@ button {
 
 .response-container {
     padding: 10px;
-    max-height: 300px; 
+    max-height: 170px; 
     overflow-y: auto;
 }
 
@@ -80,7 +80,7 @@ button {
     padding: 10px 20px;
     margin: 10px 0;
     position: relative;
-    max-width: 80%;
+    /* max-width: 80%; */
 }
 
 .response-message:not(:last-child) {
