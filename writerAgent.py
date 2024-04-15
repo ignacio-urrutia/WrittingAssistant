@@ -11,16 +11,16 @@ from langchain_core.runnables.history import RunnableWithMessageHistory
 from article import Article
 
 load_dotenv()
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-with open("sample_text.md") as f:
+with open(os.path.join(BASE_DIR, "resources", "sample_text.md")) as f:
     sample_text = f.read()
 
-with open("system_prompt.txt") as f:
+with open(os.path.join(BASE_DIR, "resources", "system_prompt.txt")) as f:
     system_prompt = f.read()
 
 from langchain.prompts import (
     ChatPromptTemplate,
-    HumanMessagePromptTemplate,
     MessagesPlaceholder,
 )
 prompt = ChatPromptTemplate.from_messages([
