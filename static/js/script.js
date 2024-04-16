@@ -7,7 +7,11 @@ function submitMDEContent(event) {
     event.preventDefault(); // Prevent the form from causing a page reload
     let markdownContent = easyMDE.value();
 
-    fetch("/update_article", {
+    // get session_id from the url
+    // Example URL: http://127.0.0.1:5000/session/ntN1lAjeSXo9zXU9WGUn
+    let url = new URL(window.location.href);
+    let session_id = url.pathname.split('/').pop();
+    fetch("/update_article/" + session_id, {
         method: "POST",
         headers: {
             'Content-Type': 'application/json'
@@ -26,6 +30,8 @@ function submitMDEContent(event) {
 document.getElementById('chat-form').onsubmit = async function(e) {
     e.preventDefault();
     let formData = new FormData(this);
+    let session_id = window.location.pathname.split('/').pop();
+    formData.append('session_id', session_id);
 
     document.getElementById('response').innerHTML = '';
     document.querySelector('textarea[name="user_input"]').value = '';  // Clear input field after sending
