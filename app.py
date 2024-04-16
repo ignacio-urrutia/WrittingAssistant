@@ -1,39 +1,79 @@
+import uuid
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 import os
-from writerAgent import Article, agent_with_chat_history  # Ensure your agent and Article class are imported here
+from writerAgent import Article, invoke_agent_with_chat_history  # Ensure your agent and Article class are imported here
+from dotenv import load_dotenv
+
+from firestore_config import db
+
+
+load_dotenv()
+
 
 app = Flask(__name__)
 
-current_article = Article("article.txt")
+def generate_session_id():
+    """Generate a unique session id"""
+    return str(uuid.uuid4())
+
+def start_session(session_id, sample_text):
+    db.collection('sessions').document(session_id).set({
+        'sample_text': sample_text,
+        'chat_history': [],
+        'article': ''
+    })
 
 @app.route("/")
 def index():
-    return render_template("index.html", content=current_article.__str__())
+    session_id = generate_session_id()
+    sample_text = ""
+    start_session(session_id, sample_text)
+    return redirect(url_for('session_index', session_id=session_id))
 
-@app.route("/update_article", methods=["POST"])
-def update_article():
-    data = request.get_json()  # Use get_json to parse the JSON request body
-    markdownContent = data.get('article')  # Ensure the key here matches the key sent from frontend
-    if markdownContent is None:
+@app.route("/load_session", methods=["POST"])
+def load_session():
+    session_id = request.form.get("session_id")
+    if session_id is None:
+        return "No session id provided", 400
+    session = db.collection('sessions').document(session_id).get()
+    if not session.exists:
+        return "Session not found", 404
+    return redirect(url_for('session_index', session_id=session_id))
+
+@app.route("/session/<session_id>")
+def session_index(session_id):
+    current_article = Article(session_id)
+    content = current_article.get_article()
+    return render_template("index.html", content=content, session_id=session_id)
+
+@app.route("/update_article/<session_id>", methods=["POST"])
+def update_article(session_id):
+    data = request.get_json()
+    markdown_content = data.get('article')
+    if markdown_content is None:
         return "No content provided", 400
     try:
-        current_article.update_article(markdownContent)  # Assuming update_article is the correct method to handle the update
+        current_article = Article(session_id)
+        current_article.update_article(markdown_content)
         return jsonify({"message": "Article updated successfully!"}), 200
     except Exception as e:
         print(e)
         return jsonify({"error": "Failed to update article"}), 500
 
+
 @app.route("/invoke_agent", methods=["POST"])
 def invoke_agent():
     user_input = request.form.get("user_input")
-    # Here we call your agent_with_chat_history to handle the input
-    result = agent_with_chat_history.invoke(
-        {"input": user_input},
-        config={"configurable": {"session_id": "example_session_id"}}  # example session_id, adjust as needed
-    )
-    response = result.get("output", "No response from the agent.")
-    return jsonify({"response": response, "content": current_article.__str__()})
-
+    session_id = request.form.get("session_id")
+    if user_input is None or session_id is None:
+        return "No user input or session id provided", 400
+    try:
+        response, content = invoke_agent_with_chat_history(session_id, user_input)
+        # add_to_chat_history(session_id, response)
+        return jsonify({"response": response, "content": content}), 200
+    except Exception as e:
+        print(e)
+        return jsonify({"error": "Failed to invoke agent"}), 500
 
 if __name__ == "__main__":
     app.run(debug=True)

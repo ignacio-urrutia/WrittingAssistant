@@ -3,3 +3,4 @@ __pycache__/
 
 .env
 article.txt
+secrets/

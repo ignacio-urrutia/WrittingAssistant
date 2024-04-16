@@ -13,6 +13,14 @@
 
 </head>
 <body>
+    <!-- Show session ID -->
+    <h2>Session ID: {{ session_id }}</h2>
+    <!-- Allow to enter another session ID to load a session -->
+    <form action="/load_session" method="post">
+        <input type="text" name="session_id" placeholder="Enter a session ID to load">
+        <button type="submit">Load Session</button>
+    </form>
+
     <div class="chat-section">
         <form action="/invoke_agent" method="post" id="chat-form">
             <textarea name="user_input" placeholder="Type your instructions here..." rows="4"></textarea>
