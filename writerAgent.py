@@ -68,7 +68,8 @@ def invoke_agent_with_chat_history(session_id: str, user_input: str):
         return "Paragraph removed"
 
     tools = [get_all_paragraphs, add_paragraph, modify_paragraph, remove_paragraph]
-    llm = ChatOpenAI(model="gpt-4-turbo")
+    # llm = ChatOpenAI(model="gpt-4-turbo")
+    llm = ChatOpenAI(model="gpt-3.5-turbo-0125")
     agent = create_tool_calling_agent(llm, tools, prompt)
     agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
     # message_history = ChatMessageHistory()

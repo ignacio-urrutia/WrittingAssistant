@@ -23,6 +23,14 @@ def start_session(session_id, sample_text):
         'article': ''
     })
 
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'txt', 'md'}
+
+def update_session_sample_text(session_id, text):
+    db.collection('sessions').document(session_id).update({
+        'sample_text': text
+    })
+
 @app.route("/")
 def index():
     session_id = generate_session_id()
@@ -74,6 +82,20 @@ def invoke_agent():
     except Exception as e:
         print(e)
         return jsonify({"error": "Failed to invoke agent"}), 500
+    
+@app.route('/upload_sample_text/<session_id>', methods=['POST'])
+def upload_sample_text(session_id):
+    if 'sample_text_file' not in request.files:
+        return 'No file part', 400
+    file = request.files['sample_text_file']
+    if file.filename == '':
+        return 'No selected file', 400
+    if file and allowed_file(file.filename):
+        text = file.read().decode('utf-8')
+        update_session_sample_text(session_id, text)
+        return redirect(url_for('session_index', session_id=session_id))
+    return 'Invalid file', 400
+
 
 if __name__ == "__main__":
     app.run(debug=True)

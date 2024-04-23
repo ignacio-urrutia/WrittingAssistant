@@ -21,6 +21,11 @@
         <button type="submit">Load Session</button>
     </form>
 
+    <form method="post" action="/upload_sample_text/{{session_id}}" enctype="multipart/form-data">
+        <input type="file" name="sample_text_file">
+        <button type="submit">Upload Sample Text</button>
+    </form>
+
     <div class="chat-section">
         <form action="/invoke_agent" method="post" id="chat-form">
             <textarea name="user_input" placeholder="Type your instructions here..." rows="4"></textarea>
